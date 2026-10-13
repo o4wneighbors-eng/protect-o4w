@@ -1,0 +1,103 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Copy script</title>
+<style>body{font:16px -apple-system,Arial,sans-serif;margin:0;padding:16px;background:#f4f4ef;color:#111}button{font:700 20px -apple-system,Arial;background:#1f5a3f;color:#fff;border:0;border-radius:12px;padding:18px;width:100%}#ok{color:#1f5a3f;font-weight:700;text-align:center;min-height:1.4em}textarea{width:100%;height:50vh;font:12px monospace;box-sizing:border-box}</style></head><body>
+<button id="b">Copy the code</button><p id="ok"></p><textarea id="t" readonly>const SHEET_NAME = &#x27;Visits&#x27;;
+const EMAIL_SUBJECT = &#x27;Please defer Z-26-52&#x27;;   // subject of the supporter email
+const TZ = &#x27;America/New_York&#x27;;
+
+function getSheet_() {
+  const props = PropertiesService.getScriptProperties();
+  let id = props.getProperty(&#x27;SHEET_ID&#x27;);
+  let ss;
+  if (id) {
+    ss = SpreadsheetApp.openById(id);
+  } else {
+    ss = SpreadsheetApp.create(&#x27;Protect O4W stats&#x27;);
+    props.setProperty(&#x27;SHEET_ID&#x27;, ss.getId());
+  }
+  let sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) {
+    sh = ss.getSheets()[0];
+    sh.setName(SHEET_NAME);
+    sh.appendRow([&#x27;Time&#x27;, &#x27;Event&#x27;, &#x27;Device&#x27;, &#x27;First visit on this device&#x27;]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+// Called by the landing page (invisible to visitors).
+function doGet(e) {
+  const p = (e &amp;&amp; e.parameter) || {};
+  const allowed = [&#x27;visit&#x27;, &#x27;video_play&#x27;, &#x27;support_open&#x27;, &#x27;gmail&#x27;, &#x27;outlook&#x27;, &#x27;mailapp&#x27;, &#x27;zoom&#x27;];
+  const ev = allowed.indexOf(p.ev) &gt;= 0 ? p.ev : &#x27;other&#x27;;
+  const dev = p.d === &#x27;phone&#x27; ? &#x27;phone&#x27; : (p.d === &#x27;laptop&#x27; ? &#x27;laptop&#x27; : &#x27;&#x27;);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(5000);
+  try {
+    getSheet_().appendRow([new Date(), ev, dev, p.n === &#x27;1&#x27; ? &#x27;yes&#x27; : &#x27;&#x27;]);
+  } finally {
+    lock.releaseLock();
+  }
+  return ContentService.createTextOutput(&#x27;ok&#x27;);
+}
+
+function summarize_(rows, since) {
+  const c = { visit: 0, newvisit: 0, phone: 0, laptop: 0, video_play: 0, support_open: 0, gmail: 0, outlook: 0, mailapp: 0, zoom: 0 };
+  rows.forEach(r =&gt; {
+    const t = r[0], ev = r[1], dev = r[2], first = r[3];
+    if (!(t instanceof Date) || (since &amp;&amp; t &lt; since)) return;
+    if (c[ev] !== undefined) c[ev]++;
+    if (ev === &#x27;visit&#x27;) {
+      if (first === &#x27;yes&#x27;) c.newvisit++;
+      if (dev === &#x27;phone&#x27;) c.phone++;
+      if (dev === &#x27;laptop&#x27;) c.laptop++;
+    }
+  });
+  return c;
+}
+
+function dailyReport() {
+  const sh = getSheet_();
+  const data = sh.getDataRange().getValues().slice(1);
+  const now = new Date();
+  const dayAgo = new Date(now.getTime() - 24 * 3600 * 1000);
+  const d = summarize_(data, dayAgo);
+  const all = summarize_(data, null);
+
+  // Supporter emails received as hidden copies in this Gmail
+  const sentToday = GmailApp.search(&#x27;subject:&quot;&#x27; + EMAIL_SUBJECT + &#x27;&quot; newer_than:1d&#x27;).length;
+  const sentTotal = GmailApp.search(&#x27;subject:&quot;&#x27; + EMAIL_SUBJECT + &#x27;&quot;&#x27;, 0, 500).length;
+
+  const line = (label, a, b) =&gt; label + &#x27;: &#x27; + a + &#x27; (total &#x27; + b + &#x27;)&#x27;;
+  const body = [
+    &#x27;Protect O4W – daily report for &#x27; + Utilities.formatDate(now, TZ, &#x27;EEE, MMM d&#x27;),
+    &#x27;&#x27;,
+    &#x27;Last 24 hours (all-time total in parentheses)&#x27;,
+    line(&#x27;Page visits&#x27;, d.visit, all.visit),
+    line(&#x27;  New devices (roughly, unique people)&#x27;, d.newvisit, all.newvisit),
+    line(&#x27;  On phones&#x27;, d.phone, all.phone),
+    line(&#x27;  On laptops&#x27;, d.laptop, all.laptop),
+    line(&#x27;Video plays&#x27;, d.video_play, all.video_play),
+    line(&#x27;Tapped &quot;Show your support&quot;&#x27;, d.support_open, all.support_open),
+    line(&#x27;  Opened Gmail&#x27;, d.gmail, all.gmail),
+    line(&#x27;  Opened Outlook&#x27;, d.outlook, all.outlook),
+    line(&#x27;  Opened Apple Mail / other&#x27;, d.mailapp, all.mailapp),
+    line(&#x27;Tapped &quot;Register to vote&quot; (Zoom)&#x27;, d.zoom, all.zoom),
+    line(&#x27;Supporter emails received (hidden copies)&#x27;, sentToday, sentTotal),
+    &#x27;&#x27;,
+    &#x27;Full log: &#x27; + SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty(&#x27;SHEET_ID&#x27;)).getUrl(),
+    &#x27;&#x27;,
+    &#x27;Note: phones that scanned the flyer QR code count as page visits. Opening the email app does not guarantee it was sent; the &quot;Supporter emails received&quot; line counts emails actually sent.&#x27;
+  ].join(&#x27;\n&#x27;);
+
+  MailApp.sendEmail(Session.getEffectiveUser().getEmail(), &#x27;Protect O4W daily report: &#x27; + d.visit + &#x27; visits, &#x27; + sentToday + &#x27; emails&#x27;, body);
+}
+
+function setup() {
+  getSheet_();
+  ScriptApp.getProjectTriggers().forEach(t =&gt; {
+    if (t.getHandlerFunction() === &#x27;dailyReport&#x27;) ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger(&#x27;dailyReport&#x27;).timeBased().everyDays(1).atHour(8).inTimezone(TZ).create();
+}
+</textarea>
+<script>document.getElementById("b").onclick=async()=>{const t=document.getElementById("t");try{await navigator.clipboard.writeText(t.value);}catch(e){t.focus();t.select();t.setSelectionRange(0,999999);document.execCommand("copy");}document.getElementById("ok").textContent="Copied! Go back to Apps Script and paste.";};</script></body></html>
