@@ -19,6 +19,9 @@
 <script>
 /* ===================== SETTINGS: edit only this part ===================== */
 const CONFIG = {
+  // Private visit counter (Google Apps Script web app URL ending in /exec). Leave "" to turn off.
+  statsUrl: "",
+
   // YouTube video ID (the part after "v=" or after "youtu.be/"). Example: "abc123XYZ"
   youtubeId: "",
 
@@ -221,6 +224,15 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
 <script>
 (function(){
   const $ = id => document.getElementById(id);
+  const ping = ev => {
+    if (!CONFIG.statsUrl) return;
+    let first = "";
+    if (ev === "visit") { try { if (!localStorage.getItem("o4w_seen")) { first = "1"; localStorage.setItem("o4w_seen", "1"); } } catch (_) {} }
+    const dev = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "phone" : "laptop";
+    const img = new Image();
+    img.src = CONFIG.statsUrl + "?ev=" + ev + "&d=" + dev + "&n=" + first + "&t=" + Date.now();
+  };
+  ping("visit");
   const ok = x => x && !/^REPLACE/i.test(x);
   const e = encodeURIComponent;
   const to = CONFIG.to.filter(ok).join(",");
@@ -244,6 +256,7 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
     btn.innerHTML = '<span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4l15 8-15 8z"/></svg></span><span class="lbl">Tap to play · 13 min</span>';
     box.appendChild(btn);
     btn.addEventListener("click", () => {
+      ping("video_play");
       if (!CONFIG.directVideo) { embedFallback(); return; }
       const vd = document.createElement("video");
       vd.src = CONFIG.directVideo; vd.controls = true; vd.playsInline = true; vd.preload = "auto";
@@ -280,7 +293,8 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
   const scrim = $("scrim");
   const open = () => { scrim.hidden = false; $("gmail").focus(); };
   const close = () => { scrim.hidden = true; $("support").focus(); };
-  $("support").addEventListener("click", open);
+  $("support").addEventListener("click", () => { ping("support_open"); open(); });
+  ["gmail","outlook","mailapp","zoom"].forEach(id => $(id).addEventListener("click", () => ping(id)));
   $("close").addEventListener("click", close);
   scrim.addEventListener("click", ev => { if (ev.target === scrim) close(); });
   document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !scrim.hidden) close(); });
