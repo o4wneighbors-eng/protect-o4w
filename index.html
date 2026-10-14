@@ -319,7 +319,12 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
     $("gmail").href = gmailIOS; $("gmail").removeAttribute("target");
     $("outlook").href = outlookApp; $("outlook").removeAttribute("target");
     const hint = $("sheetTitle").nextElementSibling;
-    if (hint) hint.insertAdjacentHTML("afterend", '<p style="font-size:.85rem">On iPhone, Gmail and Outlook need their apps installed. No app? Use <b>Apple Mail</b>.</p>');
+    if (hint) hint.insertAdjacentHTML("afterend", '<p style="font-size:.85rem">On iPhone, <b>Apple Mail</b> works best. If Gmail or Outlook opens without the letter, tap <b>Compose</b> and <b>Paste</b>. We copy everything for you when you tap.</p>');
+    // Backup: copy the whole email (addresses, subject and letter) when Gmail/Outlook is tapped on iPhone.
+    const fullText = "To: " + to + "\nCc: " + cc + (bcc ? "\nBcc: " + bcc : "") + "\nSubject: " + CONFIG.subject + "\n\n" + CONFIG.body;
+    const copyAll = () => { try { navigator.clipboard.writeText(fullText).catch(() => {}); } catch (_) {} };
+    $("gmail").addEventListener("click", copyAll);
+    $("outlook").addEventListener("click", copyAll);
   } else if (isAndroid) {
     // Gmail is the default email app on most Android phones, so mailto opens it filled in.
     $("gmail").href = mailto; $("gmail").removeAttribute("target");
