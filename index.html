@@ -314,10 +314,12 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
 
   $("mailapp").href = mailto;
   if (isIOS) {
+    // iPhone: go straight to the app. (An automatic web fallback can cancel iOS's "Open in Gmail?" prompt,
+    // and Gmail/Outlook websites on iPhone don't pre-fill anyway.)
     $("gmail").href = gmailIOS; $("gmail").removeAttribute("target");
-    $("gmail").addEventListener("click", tryApp(gmailIOS, gmailWeb));
     $("outlook").href = outlookApp; $("outlook").removeAttribute("target");
-    $("outlook").addEventListener("click", tryApp(outlookApp, outlookWeb));
+    const hint = $("sheetTitle").nextElementSibling;
+    if (hint) hint.insertAdjacentHTML("afterend", '<p style="font-size:.85rem">On iPhone, Gmail and Outlook need their apps installed. No app? Use <b>Apple Mail</b>.</p>');
   } else if (isAndroid) {
     // Gmail is the default email app on most Android phones, so mailto opens it filled in.
     $("gmail").href = mailto; $("gmail").removeAttribute("target");
