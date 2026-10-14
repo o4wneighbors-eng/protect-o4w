@@ -276,8 +276,11 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
 
   $("zoom").href = CONFIG.zoomRegistration;
 
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const isAndroid = /Android/i.test(navigator.userAgent);
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod|CriOS|FxiOS|EdgiOS|GSA\//i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(ua);
+  // Any other phone or tablet: never send to the Gmail/Outlook websites (they don't pre-fill on phones).
+  const isOtherMobile = !isIOS && !isAndroid && (/Mobi|Tablet/i.test(ua) || (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 900));
 
   const q = [];
   if (cc) q.push("cc=" + e(cc));
@@ -329,6 +332,9 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
     // Gmail is the default email app on most Android phones, so mailto opens it filled in.
     $("gmail").href = mailto; $("gmail").removeAttribute("target");
     $("outlook").href = outlookWeb;
+  } else if (isOtherMobile) {
+    $("gmail").href = mailto; $("gmail").removeAttribute("target");
+    $("outlook").href = mailto; $("outlook").removeAttribute("target");
   } else {
     $("gmail").href = gmailWeb;
     $("outlook").href = outlookWeb;
