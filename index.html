@@ -194,6 +194,30 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
 .mail .ico{width:2.2rem; height:2.2rem; border-radius:9px; display:grid; place-items:center; flex:none; font:900 .95rem/1 var(--display); color:#fff}
 .g{background:#c5221f} .o{background:#0f6cbd} .a{background:#1d7cf2}
 .close{justify-self:center; background:none; border:0; font:700 .95rem/1 var(--narrow); color:#4a5a51; padding:.6rem 1rem; cursor:pointer}
+
+/* Conditions petition */
+.petition{color-scheme:light; background:var(--panel); color:var(--panel-ink); border-radius:18px; padding:1.3rem 1.1rem 1.2rem; display:grid; gap:.9rem}
+.petition .kicker{font:800 .74rem/1 var(--narrow); letter-spacing:.14em; text-transform:uppercase; color:#6b5a12}
+.petition h2{margin:0; font:900 1.3rem/1.12 var(--display); letter-spacing:-.015em; text-wrap:balance}
+.petition p{margin:0; font-size:.88rem; line-height:1.45; color:#3f4f46}
+#petForm{display:grid; gap:.75rem}
+.conds{display:grid; gap:.35rem; margin:0; padding:0; border:0}
+.conds legend{font:800 .88rem/1.3 var(--display); margin-bottom:.45rem; padding:0}
+.cond{display:flex; gap:.6rem; align-items:flex-start; background:#fff; border:1px solid #dfe2d8; border-radius:9px; padding:.5rem .6rem; cursor:pointer; font-size:.8rem; line-height:1.35; color:#33433a}
+.cond:has(input:checked){border-color:#13261d; background:#fffbe6}
+.cond input{flex:none; width:1.05rem; height:1.05rem; margin:.05rem 0 0; accent-color:#13261d}
+.cond b{font-weight:800; color:var(--panel-ink)}
+.cond ul{margin:.15rem 0 0; padding-left:1rem}
+.selall{justify-self:start; background:none; border:0; padding:.2rem 0; font:800 .9rem/1 var(--narrow); color:#13261d; text-decoration:underline; cursor:pointer; letter-spacing:.02em}
+.field{display:grid; gap:.25rem}
+.field label{font:800 .82rem/1.2 var(--display)}
+.field label i{font-style:normal; font-weight:600; color:#6a776f}
+.field input{width:100%; font:500 1rem/1.3 var(--display); color:var(--panel-ink); background:#fff; border:1px solid #c9cdc1; border-radius:9px; padding:.6rem .7rem}
+.petition .send{background:var(--panel-ink); color:var(--panel); justify-content:center; min-height:3.1rem; padding:.8rem 1rem; font-size:1.05rem}
+.petition .fine{font-size:.74rem; color:#5d6a62}
+.petition .err{color:#a61b1b; font-weight:700; font-size:.9rem}
+.thanks{text-align:center; padding:1rem .5rem; display:grid; gap:.5rem}
+.thanks .big{font:900 1.4rem/1.15 var(--display)}
 </style>
 </head>
 <body>
@@ -218,6 +242,38 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
       <span class="arrow" aria-hidden="true">&#8599;</span>
     </a>
   </div>
+
+  <section class="petition" id="petition" aria-labelledby="petTitle">
+    <span class="kicker">Neighbor petition · Takes 1 minute</span>
+    <h2 id="petTitle">What conditions should apply to this rezoning?</h2>
+    <p>If it's approved, these protections should be written into the zoning. Check the ones you support and add your name.</p>
+
+    <form id="petForm" novalidate>
+      <fieldset class="conds">
+        <legend>Conditions I support:</legend>
+        <button class="selall" type="button" id="selAll">Select all</button>
+        <label class="cond"><input type="checkbox" name="c" value="Keep 10-story height cap"><span><b>Keep the protections the community already fought for.</b> Keep the 10-story height cap from the current MRC-3-C zoning.</span></label>
+        <label class="cond"><input type="checkbox" name="c" value="Binding building and site plan"><span><b>Lock in a binding building plan and site plan.</b> Whatever is approved must be built as shown, and it can't change without going back to the zoning board, so the community knows exactly what is being built.</span></label>
+        <label class="cond"><input type="checkbox" name="c" value="Protections for the park and neighboring homes"><span><b>Protections for the park and neighboring homes.</b> Historic Fourth Ward Park and 681 Angier Ave should both be treated as if zoned residential (R-5) for setback, buffer, height-plane and transitional purposes under MRC-3 zoning.</span></label>
+        <label class="cond"><input type="checkbox" name="c" value="No shadows on the park 9-3"><span><b>No shadows on the park.</b> The building does not cast shadows on Historic Fourth Ward Park from 9 a.m. to 3 p.m.</span></label>
+        <label class="cond"><input type="checkbox" name="c" value="Environmental, dust and erosion plan"><span><b>Environmental plan.</b> Require an environmental, dust, and erosion-control plan. The site sits about 5 feet from the park.</span></label>
+        <label class="cond"><input type="checkbox" name="c" value="Replace 22 street parking spaces"><span><b>Replace parking.</b> Replace the 22 free street parking spaces used by park visitors that would be removed by this rezoning.</span></label>
+      </fieldset>
+
+      <div class="field"><label for="pName">Name</label><input id="pName" name="name" autocomplete="name" required maxlength="100"></div>
+      <div class="field"><label for="pEmail">Email address</label><input id="pEmail" name="email" type="email" autocomplete="email" required maxlength="120"></div>
+      <div class="field"><label for="pAddr">Street address</label><input id="pAddr" name="address" autocomplete="address-line1" required maxlength="120" placeholder="House number and street"></div>
+
+      <p class="err" id="pErr" role="alert" hidden></p>
+      <button class="btn send" type="submit" id="pSend">Sign the petition</button>
+      <p class="fine">Your name, street address and choices are shared with NPU-M, the Zoning Review Board, City Planning and City Council as part of this petition. Your email stays private and is used only to confirm your signature and send updates on this case.</p>
+    </form>
+
+    <div class="thanks" id="pThanks" hidden>
+      <span class="big">Thank you. Your name is on the petition.</span>
+      <p>Now make it count: register for the NPU M meeting on Monday, October 26.</p>
+    </div>
+  </section>
 
   <footer>Organized by Old Fourth Ward neighbors · Questions? <a href="mailto:O4Wneighbors@gmail.com" style="color:inherit">O4Wneighbors@gmail.com</a></footer>
 </main>
@@ -244,6 +300,41 @@ footer{font:600 .8rem/1.4 var(--narrow); color:var(--muted); text-align:center; 
     const dev = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "phone" : "laptop";
     const img = new Image();
     img.src = CONFIG.statsUrl + "?ev=" + ev + "&d=" + dev + "&n=" + first + "&t=" + Date.now();
+  };
+
+  // Conditions petition: posts to the same private Google Apps Script.
+  const pf = $("petForm");
+  if (pf) {
+    const boxes = () => Array.from(pf.querySelectorAll('input[name="c"]'));
+    $("selAll").addEventListener("click", () => {
+      const all = boxes().every(b => b.checked);
+      boxes().forEach(b => { b.checked = !all; });
+      $("selAll").textContent = all ? "Select all" : "Clear all";
+    });
+    pf.addEventListener("submit", ev => {
+      ev.preventDefault();
+      const err = $("pErr");
+      const picks = boxes().filter(b => b.checked).map(b => b.value);
+      const name = $("pName").value.trim(), addr = $("pAddr").value.trim();
+      let msg = "";
+      if (!picks.length) msg = "Please check at least one condition.";
+      else if (!name) msg = "Please add your name.";
+      else if (!/^\S+@\S+\.\S+$/.test($("pEmail").value.trim())) msg = "Please add a valid email address.";
+      else if (!addr) msg = "Please add your street address.";
+      if (msg) { err.textContent = msg; err.hidden = false; return; }
+      err.hidden = true;
+      const btn = $("pSend"); btn.disabled = true; btn.textContent = "Sending…";
+      const data = new URLSearchParams({
+        ev: "petition", name: name, address: addr, email: $("pEmail").value.trim(),
+        conditions: picks.join(" | "),
+        d: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "phone" : "laptop"
+      });
+      const done = () => { pf.hidden = true; $("pThanks").hidden = false; $("pThanks").scrollIntoView({behavior:"smooth", block:"center"}); };
+      if (!CONFIG.statsUrl) { done(); return; }
+      fetch(CONFIG.statsUrl, { method: "POST", mode: "no-cors", body: data })
+        .then(done)
+        .catch(() => { btn.disabled = false; btn.textContent = "Sign the petition"; err.textContent = "That didn't go through. Please check your connection and try again."; err.hidden = false; });
+    });
   };
   ping("visit");
   const ok = x => x && !/^REPLACE/i.test(x);
